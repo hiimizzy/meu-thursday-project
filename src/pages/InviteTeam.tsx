@@ -16,11 +16,21 @@ interface TeamMember {
   role: 'admin' | 'member';
 }
 
+// configurações emailjs
+const emailjsConfig = {
+  serviceId: 'service_wc8jkkb',
+  templateId: 'template_erpemwe',
+  publicKey: '8xB0j44NLXOwhu8Q7'
+};
+
 const InviteTeam = () => {
   const navigate = useNavigate();
   const [invites, setInvites] = useState<TeamMember[]>([]);
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState<'admin' | 'member'>('member');
+
+  // estado de carregamento
+  const [isSending, setIsSending] = useState(false);
 
   const addInvite = () => {
     if (newEmail && newEmail.includes('@')) {
@@ -39,10 +49,43 @@ const InviteTeam = () => {
     setInvites(invites.filter(invite => invite.id !== id));
   };
 
-  const handleSubmit = () => {
-    // Simular envio de convites
-    navigate('/choose-view');
+  // const handleSubmit = () => {
+  //   // Simular envio de convites
+  //   navigate('/choose-view');
+  // };
+
+   const sendInvites = async () => {
+    if (invites.length === 0) {
+      navigate('/choose-view');
+      return;
+    }
+
+    setIsSending(true);
+        try {
+      // Envia cada convite individualmente
+      const sendPromises = invites.map(invite => {
+        const templateParams = {
+          to_email: invite.email,
+          role: invite.role === 'admin' ? 'Administrador' : 'Membro',
+          from_name: 'Thursday Team' 
+        };
+         return emailjs.send(
+          emailjsConfig.serviceId,
+          emailjsConfig.templateId,
+          templateParams,
+          emailjsConfig.publicKey
+        );
+      });
+       await Promise.all(sendPromises);
+      navigate('/choose-view');
+    } catch (error) {
+      console.error('Erro ao enviar convites:', error);
+      alert('Ocorreu um erro ao enviar os convites. Por favor, tente novamente.');
+    } finally {
+      setIsSending(false);
+    }
   };
+
 
   const skipInvites = () => {
     navigate('/choose-view');
@@ -161,10 +204,13 @@ const InviteTeam = () => {
                 Fazer isso mais tarde
               </Button>
               <Button
-                onClick={handleSubmit}
+                onClick={sendInvites}
+                disabled={isSending}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
-                {invites.length > 0 ? `Enviar ${invites.length} convite(s)` : 'Continuar'}
+                 {isSending ? 'Enviando...' : invites.length > 0 ? `Enviar ${invites.length} convite(s)` : 'Continuar'}
+
+                {/* {invites.length > 0 ? `Enviar ${invites.length} convite(s)` : 'Continuar'} */}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
