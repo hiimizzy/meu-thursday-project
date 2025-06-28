@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from 'react-router-dom';
 import { Plus, X, Mail, Users, ArrowRight } from 'lucide-react';
+// emailjs
+import emailjs from '@emailjs/browser';
 
 interface TeamMember {
   id: string;
